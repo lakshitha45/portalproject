@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GM TEK — Talent Acquisition Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #f0f2f5;
+  --surface:  #ffffff;
+  --nav:      #0b1929;
+  --primary:  #0057ff;
+  --primary-light: #e8efff;
+  --success:  #00a36c;
+  --warning:  #e07b00;
+  --danger:   #d93025;
+  --ink:      #0d1117;
+  --ink-2:    #3d4a5c;
+  --ink-3:    #7a8799;
+  --border:   #dde2ea;
+  --border-2: #eaeef3;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.07);
+  --radius:   10px;
+  --radius-lg:16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* NAV */
+.topnav {
+  height: 58px;
+  background: var(--nav);
+  display: flex;
+  align-items: center;
+  padding: 0 1.75rem;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-logo {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+.nav-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.1); }
+.nav-mod { font-size: 0.72rem; font-weight: 500; color: rgba(255,255,255,0.4); letter-spacing: 0.8px; text-transform: uppercase; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.nav-user-name { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.85); text-align:right; }
+.nav-user-role { font-size: 0.67rem; color: rgba(255,255,255,0.4); text-align:right; }
+.nav-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg,#0057ff,#0040cc);
+  display:flex; align-items:center; justify-content:center;
+  font-size: 0.68rem; font-weight: 700; color:#fff; cursor:pointer;
+}
+
+/* SUBHEADER */
+.subheader {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.1rem 1.75rem;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.subheader-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--ink); }
+.subheader-sub { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.18rem; }
+.stat-row { display: flex; gap: 1.5rem; align-items: center; }
+.stat-pill { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--ink-2); font-weight: 500; }
+.sdot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* SEARCH SECTION */
+.search-section {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.75rem;
+}
+.search-row { display: flex; gap: 0.65rem; align-items: center; }
+.search-field { position: relative; flex: 1; }
+.search-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 2.5rem 0 2.6rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.865rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.search-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,87,255,0.09); }
+.search-input::placeholder { color: var(--ink-3); }
+.s-ico {
+  position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);
+  color: var(--ink-3); pointer-events: none; width: 15px; height: 15px;
+}
+.s-clear {
+  position: absolute; right: 0.7rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-3); display: none; padding: 3px; border-radius: 50%;
+  transition: color 0.15s, background 0.15s; line-height: 1;
+}
+.s-clear:hover { color: var(--ink); background: var(--border-2); }
+.search-btn {
+  height: 42px; padding: 0 1.4rem;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.845rem; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,87,255,0.3);
+  transition: background 0.15s, transform 0.1s;
+}
+.search-btn:hover { background: #0045d4; }
+.search-btn:active { transform: scale(0.98); }
+
+/* SUGGESTIONS */
+.sugg-box {
+  position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 400; overflow: hidden; display: none;
+  animation: fdwn 0.14s ease;
+}
+@keyframes fdwn { from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)} }
+.sugg-box.open { display: block; }
+.sugg-head {
+  padding: 0.55rem 0.95rem;
+  font-size: 0.67rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ink-3); border-bottom: 1px solid var(--border-2); background: var(--bg);
+}
+.sugg-item {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.6rem 0.95rem;
+  cursor: pointer; font-size: 0.845rem;
+  border-bottom: 1px solid var(--border-2);
+  transition: background 0.12s;
+}
+.sugg-item:last-child { border-bottom: none; }
+.sugg-item:hover { background: var(--primary-light); }
+.sugg-iw {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--primary-light);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.sugg-iw svg { width: 13px; height: 13px; color: var(--primary); }
+.sugg-lbl { flex:1; font-weight:500; color:var(--ink); }
+.sugg-lbl em { color:var(--primary); font-style:normal; font-weight:700; }
+.sugg-cnt { font-size:0.68rem; font-weight:600; padding:0.12rem 0.45rem; border-radius:20px; background:var(--primary-light); color:var(--primary); }
+
+/* ACTIVE TAG */
+.s-tag {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  background: var(--primary); color:#fff;
+  font-size:0.755rem; font-weight:600;
+  padding:0.28rem 0.38rem 0.28rem 0.7rem;
+  border-radius:20px; margin-top:0.65rem;
+}
+.s-tag button {
+  width:17px; height:17px; border-radius:50%;
+  background:rgba(255,255,255,0.22); border:none; color:#fff;
+  cursor:pointer; font-size:0.65rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.15s;
+}
+.s-tag button:hover { background:rgba(255,255,255,0.4); }
+
+/* LAYOUT */
+.page-wrap { display:flex; min-height:calc(100vh - 200px); }
+
+/* SIDEBAR */
+.sidebar {
+  width: 252px; flex-shrink:0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 1.2rem 1rem;
+  position: sticky; top: 58px;
+  height: calc(100vh - 58px);
+  overflow-y: auto;
+}
+.sb-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:1.1rem; padding-bottom:0.8rem;
+  border-bottom:1px solid var(--border-2);
+}
+.sb-title { font-size:0.7rem; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--ink-2); }
+.sb-clear {
+  font-size:0.7rem; font-weight:600; color:var(--primary);
+  background:none; border:none; cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  transition:opacity 0.15s;
+}
+.sb-clear:hover { opacity:0.7; }
+.fg { margin-bottom:1.25rem; }
+.fg-label {
+  font-size:0.69rem; font-weight:700; color:var(--ink-3);
+  text-transform:uppercase; letter-spacing:0.7px;
+  margin-bottom:0.55rem;
+  display:flex; align-items:center; gap:0.35rem;
+}
+.fg-label svg { width:11px; height:11px; }
+.chips { display:flex; flex-wrap:wrap; gap:0.35rem; }
+.chip {
+  font-size:0.755rem; font-weight:500;
+  padding:0.28rem 0.7rem;
+  border-radius:6px;
+  border:1.5px solid var(--border);
+  background:#fff; color:var(--ink-2);
+  cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  transition:all 0.14s; line-height:1.4;
+}
+.chip:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+.chip.on { background:var(--primary); border-color:var(--primary); color:#fff; }
+
+/* MAIN */
+.main { flex:1; padding:1.4rem; overflow:hidden; }
+.toolbar {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:1.1rem; flex-wrap:wrap; gap:0.75rem;
+}
+.res-count { font-size:0.845rem; color:var(--ink-2); font-weight:500; }
+.res-count strong { color:var(--ink); font-weight:700; }
+
+/* GRID */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:0.95rem; }
+
+/* CARD */
+.ccard {
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:1.2rem;
+  cursor:pointer;
+  transition:border-color 0.17s, box-shadow 0.17s, transform 0.17s;
+  position:relative;
+  animation:cin 0.28s ease both;
+}
+@keyframes cin { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+.ccard:hover {
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(0,87,255,0.06),var(--shadow-md);
+  transform:translateY(-2px);
+}
+.ct { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.9rem; }
+.cl { display:flex; align-items:center; gap:0.8rem; }
+.cav {
+  width:44px; height:44px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif; font-weight:700;
+  font-size:0.95rem; color:#fff; flex-shrink:0;
+}
+.cn { font-family:'Bricolage Grotesque',sans-serif; font-size:0.94rem; font-weight:700; color:var(--ink); line-height:1.2; }
+.cr { font-size:0.755rem; color:var(--ink-3); margin-top:0.12rem; }
+.ntag {
+  font-size:0.67rem; font-weight:700;
+  padding:0.18rem 0.5rem; border-radius:5px;
+  white-space:nowrap; flex-shrink:0;
+}
+.ng  { background:#e6f7f1; color:var(--success); }
+.nb  { background:#e8efff; color:var(--primary); }
+.no  { background:#fff4e5; color:var(--warning); }
+.nr  { background:#fdecea; color:var(--danger); }
+.cdiv { height:1px; background:var(--border-2); margin:0.8rem 0; }
+.cmrow { display:flex; gap:1.1rem; flex-wrap:wrap; margin-bottom:0.8rem; }
+.cm { display:flex; align-items:center; gap:0.3rem; font-size:0.755rem; color:var(--ink-2); font-weight:500; }
+.cm svg { width:12px; height:12px; color:var(--ink-3); flex-shrink:0; }
+.skrow { display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:0.9rem; }
+.skt { font-size:0.68rem; font-weight:600; padding:0.18rem 0.55rem; border-radius:5px; background:var(--bg); color:var(--ink-2); border:1px solid var(--border); }
+.cfoot { display:flex; align-items:center; justify-content:space-between; }
+.sal-lbl { font-size:0.67rem; color:var(--ink-3); font-weight:500; margin-bottom:0.1rem; }
+.sal-val { font-family:'Bricolage Grotesque',sans-serif; font-size:0.98rem; font-weight:700; color:var(--ink); }
+.vbtn {
+  height:33px; padding:0 1rem;
+  background:var(--primary-light); color:var(--primary);
+  border:1.5px solid rgba(0,87,255,0.18);
+  border-radius:7px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:0.755rem; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:0.3rem;
+  transition:all 0.15s;
+}
+.vbtn:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+/* EMPTY */
+.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5rem 2rem; text-align:center; }
+.empty-ico { width:60px; height:60px; background:var(--bg); border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:1.1rem; }
+.empty-ico svg { width:26px; height:26px; color:var(--ink-3); }
+.empty-t { font-family:'Bricolage Grotesque',sans-serif; font-size:1.05rem; font-weight:700; color:var(--ink); margin-bottom:0.35rem; }
+.empty-s { font-size:0.83rem; color:var(--ink-3); }
+
+/* MODAL */
+.mbg {
+  position:fixed; inset:0;
+  background:rgba(11,25,41,0.52);
+  backdrop-filter:blur(6px);
+  z-index:500;
+  display:flex; align-items:center; justify-content:center;
+  padding:1.5rem;
+  opacity:0; pointer-events:none;
+  transition:opacity 0.22s;
+}
+.mbg.open { opacity:1; pointer-events:all; }
+.mbox {
+  background:var(--surface);
+  border-radius:var(--radius-lg);
+  width:100%; max-width:630px; max-height:90vh;
+  overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+  transform:scale(0.97) translateY(10px);
+  transition:transform 0.22s;
+}
+.mbg.open .mbox { transform:scale(1) translateY(0); }
+.mtop {
+  padding:1.6rem 1.75rem 1.4rem;
+  border-bottom:1px solid var(--border);
+  position:relative; display:flex; gap:1.1rem; align-items:flex-start;
+}
+.mav {
+  width:56px; height:56px; border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif; font-weight:700;
+  font-size:1.3rem; color:#fff; flex-shrink:0;
+}
+.mn { font-family:'Bricolage Grotesque',sans-serif; font-size:1.28rem; font-weight:700; color:var(--ink); line-height:1.2; }
+.mr { font-size:0.83rem; color:var(--ink-3); margin-top:0.25rem; }
+.mtags { display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.65rem; }
+.mtag { font-size:0.7rem; font-weight:600; padding:0.22rem 0.6rem; border-radius:5px; background:var(--bg); color:var(--ink-2); border:1px solid var(--border); }
+.mclose {
+  position:absolute; top:1.1rem; right:1.1rem;
+  width:30px; height:30px; border-radius:7px;
+  background:var(--bg); border:1px solid var(--border);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-2); font-size:0.9rem;
+  transition:all 0.14s;
+}
+.mclose:hover { background:var(--border); }
+.mbody { padding:1.4rem 1.75rem; }
+.msec { margin-bottom:1.6rem; }
+.msec:last-child { margin-bottom:0; }
+.mslbl {
+  font-size:0.68rem; font-weight:700; letter-spacing:1.1px; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:0.9rem; padding-bottom:0.55rem;
+  border-bottom:1px solid var(--border-2);
+  display:flex; align-items:center; gap:0.45rem;
+}
+.mslbl svg { width:12px; height:12px; }
+.i2 { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+.ic label { display:block; font-size:0.68rem; font-weight:600; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:0.25rem; }
+.ic span { font-size:0.855rem; font-weight:500; color:var(--ink); }
+.cert {
+  display:flex; align-items:center; gap:0.7rem;
+  padding:0.6rem 0.8rem; border-radius:7px;
+  background:var(--bg); border:1px solid var(--border-2);
+  font-size:0.82rem; font-weight:500; color:var(--ink);
+  margin-bottom:0.45rem;
+}
+.cert svg { width:14px; height:14px; color:var(--success); flex-shrink:0; }
+.mskchip {
+  display:inline-flex; font-size:0.755rem; font-weight:600;
+  padding:0.28rem 0.7rem; border-radius:6px;
+  background:var(--primary-light); color:var(--primary);
+  border:1px solid rgba(0,87,255,0.14); margin:0.18rem;
+}
+
+@media(max-width:768px){
+  .page-wrap{flex-direction:column}
+  .sidebar{width:100%;position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .stat-row{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-logo"><div class="nav-dot"></div>GM TEK</div>
+  <div class="nav-sep"></div>
+  <div class="nav-mod">Talent Acquisition Platform</div>
+  <div class="nav-right">
+    <div>
+      <div class="nav-user-name">Admin User</div>
+      <div class="nav-user-role">Recruitment Manager</div>
+    </div>
+    <div class="nav-av">AU</div>
+  </div>
+</nav>
+
+<!-- SUBHEADER -->
+<div class="subheader">
+  <div>
+    <div class="subheader-title">Candidate Search</div>
+    <div class="subheader-sub">Search and filter qualified candidates from the talent pool</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-pill"><div class="sdot" style="background:#00a36c"></div><span id="totalCount">12 Total</span></div>
+    <div class="stat-pill"><div class="sdot" style="background:#0057ff"></div><span id="matchCount">12 Matching</span></div>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-row">
+    <div class="search-field">
+      <svg class="s-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by skill or job role  (e.g. Java, React, DevOps…)" autocomplete="off"/>
+      <button class="s-clear" id="sClear">
+        <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <div class="sugg-box" id="suggBox"></div>
+    </div>
+    <button class="search-btn" id="sBtn">
+      <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2.2"/><path stroke-linecap="round" stroke-width="2.2" d="M21 21l-4.35-4.35"/></svg>
+      Search
+    </button>
+  </div>
+  <div id="tagArea"></div>
+</div>
+
+<!-- BODY -->
+<div class="page-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <span class="sb-title">Filters</span>
+      <button class="sb-clear" id="clearAll">Clear all</button>
+    </div>
+
+    <div class="fg">
+      <div class="fg-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Experience
+      </div>
+      <div class="chips">
+        <span class="chip" data-g="exp" data-v="0-2">0–2 Yrs</span>
+        <span class="chip" data-g="exp" data-v="2-5">2–5 Yrs</span>
+        <span class="chip" data-g="exp" data-v="5-10">5–10 Yrs</span>
+        <span class="chip" data-g="exp" data-v="10+">10+ Yrs</span>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="fg-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="2"/></svg>
+        Location
+      </div>
+      <div class="chips">
+        <span class="chip" data-g="loc" data-v="Bangalore">Bangalore</span>
+        <span class="chip" data-g="loc" data-v="Hyderabad">Hyderabad</span>
+        <span class="chip" data-g="loc" data-v="Chennai">Chennai</span>
+        <span class="chip" data-g="loc" data-v="Mumbai">Mumbai</span>
+        <span class="chip" data-g="loc" data-v="Delhi">Delhi</span>
+        <span class="chip" data-g="loc" data-v="Remote">Remote</span>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="fg-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Expected CTC
+      </div>
+      <div class="chips">
+        <span class="chip" data-g="sal" data-v="3-6">3–6 LPA</span>
+        <span class="chip" data-g="sal" data-v="6-10">6–10 LPA</span>
+        <span class="chip" data-g="sal" data-v="10+">10+ LPA</span>
+      </div>
+    </div>
+
+    <div class="fg">
+      <div class="fg-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Notice Period
+      </div>
+      <div class="chips">
+        <span class="chip" data-g="notice" data-v="Immediate">Immediate</span>
+        <span class="chip" data-g="notice" data-v="15 Days">15 Days</span>
+        <span class="chip" data-g="notice" data-v="30 Days">30 Days</span>
+        <span class="chip" data-g="notice" data-v="60 Days">60 Days</span>
+        <span class="chip" data-g="notice" data-v="90 Days">90 Days</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="toolbar">
+      <div class="res-count" id="resCount"><strong>12</strong> candidates found</div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="empty-ico"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+      <div class="empty-t">No candidates found</div>
+      <div class="empty-s">Adjust your search or filters to find matching candidates.</div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="mbg" id="modal"><div class="mbox" id="mbox"></div></div>
+
+<script>
+const DATA = [
+  {id:1,  name:"Arjun Mehta",     role:"Java Backend Engineer",     skills:["Java","Spring Boot","REST API","Microservices","Hibernate"],  er:"5-10", exp:"5 Years",  loc:"Bangalore", sr:"6-10", sal:"8 LPA",   notice:"30 Days",   email:"arjun.mehta@gmtek.in",     ph:"+91 98765 43210", edu:"B.Tech CSE — VIT University, 2019",       certs:["AWS Certified Developer – Associate","Oracle Java SE 8 Programmer"]},
+  {id:2,  name:"Priya Sharma",    role:"React Frontend Developer",  skills:["React.js","TypeScript","Tailwind CSS","Redux","Axios"],        er:"2-5",  exp:"3 Years",  loc:"Hyderabad", sr:"6-10", sal:"6 LPA",   notice:"15 Days",   email:"priya.sharma@gmtek.in",    ph:"+91 97654 32109", edu:"B.Sc IT — Osmania University, 2021",       certs:["Meta Front-End Developer Certificate"]},
+  {id:3,  name:"Rahul Nair",      role:"Full Stack Developer",      skills:["React","Node.js","MongoDB","Docker","GraphQL"],               er:"5-10", exp:"7 Years",  loc:"Chennai",   sr:"10+",  sal:"14 LPA",  notice:"60 Days",   email:"rahul.nair@gmtek.in",      ph:"+91 96543 21098", edu:"M.Tech CSE — IIT Madras, 2017",            certs:["Google Cloud Professional Dev","AWS Solutions Architect"]},
+  {id:4,  name:"Sneha Pillai",    role:"Data Scientist",            skills:["Python","TensorFlow","ML","SQL","Pandas"],                    er:"2-5",  exp:"4 Years",  loc:"Mumbai",    sr:"10+",  sal:"11 LPA",  notice:"Immediate", email:"sneha.pillai@gmtek.in",    ph:"+91 95432 10987", edu:"M.Sc Data Science — BITS Pilani, 2020",    certs:["Coursera ML Specialization","TensorFlow Developer Certificate"]},
+  {id:5,  name:"Vikram Singh",    role:"DevOps Engineer",           skills:["Kubernetes","Docker","Jenkins","Terraform","Ansible"],        er:"5-10", exp:"6 Years",  loc:"Delhi",     sr:"10+",  sal:"13 LPA",  notice:"30 Days",   email:"vikram.singh@gmtek.in",    ph:"+91 94321 09876", edu:"B.Tech — NIT Delhi, 2018",                 certs:["CKA – Certified Kubernetes Admin","HashiCorp Terraform Associate"]},
+  {id:6,  name:"Deepika Rao",     role:"UI/UX Designer",            skills:["Figma","Adobe XD","Prototyping","User Research"],            er:"2-5",  exp:"2 Years",  loc:"Bangalore", sr:"3-6",  sal:"5 LPA",   notice:"15 Days",   email:"deepika.rao@gmtek.in",     ph:"+91 93210 98765", edu:"B.Des — NID Ahmedabad, 2022",              certs:["Google UX Design Certificate"]},
+  {id:7,  name:"Karan Patel",     role:"Android Developer",         skills:["Kotlin","Jetpack Compose","Firebase","Room DB","MVVM"],     er:"0-2",  exp:"1 Year",   loc:"Remote",    sr:"3-6",  sal:"4 LPA",   notice:"Immediate", email:"karan.patel@gmtek.in",     ph:"+91 92109 87654", edu:"B.Tech — LJ University, 2023",             certs:["Google Associate Android Developer"]},
+  {id:8,  name:"Ananya Iyer",     role:"Cloud Architect",           skills:["AWS","GCP","Azure","Terraform","Kubernetes"],               er:"10+",  exp:"11 Years", loc:"Hyderabad", sr:"10+",  sal:"25 LPA",  notice:"90 Days",   email:"ananya.iyer@gmtek.in",     ph:"+91 91098 76543", edu:"B.Tech — IIIT Hyderabad, 2013",            certs:["AWS Certified SA Professional","Google Cloud Architect"]},
+  {id:9,  name:"Rohan Gupta",     role:"QA Automation Engineer",    skills:["Selenium","JIRA","TestNG","Postman","Cypress"],             er:"2-5",  exp:"3 Years",  loc:"Chennai",   sr:"3-6",  sal:"5.5 LPA", notice:"30 Days",   email:"rohan.gupta@gmtek.in",     ph:"+91 90987 65432", edu:"B.Sc CS — Anna University, 2021",          certs:["ISTQB Foundation Level"]},
+  {id:10, name:"Meera Krishnan",  role:"Product Manager",           skills:["Agile","Jira","Roadmapping","Analytics","Scrum"],           er:"5-10", exp:"8 Years",  loc:"Mumbai",    sr:"10+",  sal:"18 LPA",  notice:"60 Days",   email:"meera.krishnan@gmtek.in",  ph:"+91 89876 54321", edu:"MBA — IIM Bangalore, 2016",                certs:["PMP Certified","Certified Scrum Master"]},
+  {id:11, name:"Aditya Verma",    role:"Python Developer",          skills:["Python","Django","FastAPI","PostgreSQL","Celery"],          er:"0-2",  exp:"2 Years",  loc:"Delhi",     sr:"3-6",  sal:"5 LPA",   notice:"15 Days",   email:"aditya.verma@gmtek.in",    ph:"+91 88765 43210", edu:"B.Tech — Amity University, 2023",          certs:["Python Institute PCAP"]},
+  {id:12, name:"Lakshmi Nambiar", role:"Salesforce Developer",      skills:["Apex","LWC","Salesforce CRM","SOQL","Integration"],        er:"5-10", exp:"5 Years",  loc:"Bangalore", sr:"10+",  sal:"10 LPA",  notice:"90 Days",   email:"lakshmi.nambiar@gmtek.in", ph:"+91 87654 32109", edu:"B.Tech — Manipal University, 2019",        certs:["Salesforce Platform Developer I","Salesforce Admin 201"]},
+];
+
+const SUGGS = [
+  "Java Developer","Java Spring Boot Developer","Java Backend Engineer",
+  "React Frontend Developer","React.js Engineer","React Native Developer",
+  "Python Developer","Django Developer","FastAPI Developer",
+  "Full Stack Developer","MERN Stack Developer","MEAN Stack Developer",
+  "DevOps Engineer","Site Reliability Engineer","Cloud DevOps Engineer",
+  "Data Scientist","ML Engineer","AI/ML Developer",
+  "Android Developer","iOS Developer","Mobile App Developer",
+  "Cloud Architect","AWS Solutions Architect","Azure Cloud Engineer",
+  "QA Engineer","Automation Tester","SDET",
+  "UI/UX Designer","Product Designer",
+  "Product Manager","Scrum Master",
+  "Salesforce Developer","CRM Developer",
+  "Node.js Developer","Backend Engineer",
+];
+
+const COLORS=["#1a56db","#0e9f6e","#c81e1e","#7c3aed","#d97706","#0891b2","#be185d","#047857","#9333ea","#b45309","#1d4ed8","#065f46"];
+const fn=n=>n.split(' ').map(w=>w[0]).join('');
+const gc=i=>COLORS[i%COLORS.length];
+const nc=n=>n==='Immediate'?'ng':n==='15 Days'||n==='30 Days'?'nb':n==='60 Days'?'no':'nr';
+
+const F={exp:null,loc:null,sal:null,notice:null};
+let SQ='';
+
+function getList(){
+  return DATA.filter(c=>{
+    if(F.exp&&c.er!==F.exp)return false;
+    if(F.loc&&c.loc!==F.loc)return false;
+    if(F.sal&&c.sr!==F.sal)return false;
+    if(F.notice&&c.notice!==F.notice)return false;
+    if(SQ){const q=SQ.toLowerCase();if(!c.role.toLowerCase().includes(q)&&!c.skills.some(s=>s.toLowerCase().includes(q)))return false;}
+    return true;
+  });
+}
+
+function render(){
+  const list=getList();
+  const g=$('#grid'),e=$('#emptyState');
+  $('#matchCount').text(list.length+' Matching');
+  $('#resCount').html(`<strong>${list.length}</strong> candidate${list.length!==1?'s':''} found`);
+  g.empty();
+  if(!list.length){e.show();return;}
+  e.hide();
+  list.forEach((c,i)=>{
+    const col=gc(c.id-1);
+    const chips=c.skills.slice(0,4).map(s=>`<span class="skt">${s}</span>`).join('');
+    g.append(`
+      <div class="ccard" data-id="${c.id}" style="animation-delay:${i*0.035}s">
+        <div class="ct">
+          <div class="cl">
+            <div class="cav" style="background:${col}">${fn(c.name)}</div>
+            <div>
+              <div class="cn">${c.name}</div>
+              <div class="cr">${c.role}</div>
+            </div>
+          </div>
+          <span class="ntag ${nc(c.notice)}">${c.notice}</span>
+        </div>
+        <div class="cdiv"></div>
+        <div class="cmrow">
+          <div class="cm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="2"/></svg>${c.loc}</div>
+          <div class="cm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>${c.exp}</div>
+        </div>
+        <div class="skrow">${chips}</div>
+        <div class="cfoot">
+          <div><div class="sal-lbl">Expected CTC</div><div class="sal-val">${c.sal}</div></div>
+          <button class="vbtn" data-id="${c.id}">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            View Profile
+          </button>
+        </div>
+      </div>
+    `);
+  });
+}
+
+let deb;
+function showSugg(q){
+  const box=$('#suggBox');
+  if(!q.trim()){box.removeClass('open').empty();return;}
+  const lq=q.toLowerCase();
+  const m=SUGGS.filter(s=>s.toLowerCase().includes(lq)).slice(0,7);
+  if(!m.length){box.removeClass('open').empty();return;}
+  box.empty();
+  box.append(`<div class="sugg-head">Suggestions</div>`);
+  m.forEach(s=>{
+    const hl=s.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<em>$1</em>');
+    const cnt=DATA.filter(c=>c.role.toLowerCase().includes(s.split(' ')[0].toLowerCase())||c.skills.some(sk=>sk.toLowerCase().includes(s.split(' ')[0].toLowerCase()))).length;
+    box.append(`
+      <div class="sugg-item" data-val="${s}">
+        <div class="sugg-iw"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg></div>
+        <span class="sugg-lbl">${hl}</span>
+        ${cnt>0?`<span class="sugg-cnt">${cnt}</span>`:''}
+      </div>
+    `);
+  });
+  box.addClass('open');
+}
+
+function applySearch(val){
+  SQ=val;
+  $('#searchInput').val(val);
+  $('#suggBox').removeClass('open').empty();
+  val?$('#sClear').show():$('#sClear').hide();
+  if(val){
+    $('#tagArea').html(`
+      <div class="s-tag">
+        <svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2.5"/><path stroke-linecap="round" stroke-width="2.5" d="M21 21l-4.35-4.35"/></svg>
+        ${val}
+        <button id="clrTag"><svg width="7" height="7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+    `);
+  } else {
+    $('#tagArea').empty();
+  }
+  render();
+}
+
+function openModal(id){
+  const c=DATA.find(x=>x.id===id);
+  if(!c) return;
+  const col=gc(c.id-1);
+  const sc=c.skills.map(s=>`<span class="mskchip">${s}</span>`).join('');
+  const ce=c.certs.map(x=>`<div class="cert"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>${x}</div>`).join('');
+  $('#mbox').html(`
+    <div class="mtop">
+      <div class="mav" style="background:${col}">${fn(c.name)}</div>
+      <div style="flex:1">
+        <div class="mn">${c.name}</div>
+        <div class="mr">${c.role}</div>
+        <div class="mtags">
+          <span class="mtag">${c.loc}</span>
+          <span class="mtag">${c.exp} Experience</span>
+          <span class="mtag ntag ${nc(c.notice)}" style="font-size:0.68rem">${c.notice}</span>
+        </div>
+      </div>
+      <button class="mclose" id="mCloseBtn"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mbody">
+      <div class="msec">
+        <div class="mslbl"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Personal Information</div>
+        <div class="i2">
+          <div class="ic"><label>Email</label><span>${c.email}</span></div>
+          <div class="ic"><label>Phone</label><span>${c.ph}</span></div>
+          <div class="ic"><label>Location</label><span>${c.loc}</span></div>
+          <div class="ic"><label>Notice Period</label><span>${c.notice}</span></div>
+        </div>
+      </div>
+      <div class="msec">
+        <div class="mslbl"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>Education & Qualifications</div>
+        <div class="ic"><label>Institution</label><span>${c.edu}</span></div>
+      </div>
+      <div class="msec">
+        <div class="mslbl"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Professional Experience</div>
+        <div class="i2">
+          <div class="ic"><label>Total Experience</label><span>${c.exp}</span></div>
+          <div class="ic"><label>Expected CTC</label><span>${c.sal}</span></div>
+        </div>
+      </div>
+      <div class="msec">
+        <div class="mslbl"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>Skills & Technologies</div>
+        <div>${sc}</div>
+      </div>
+      <div class="msec">
+        <div class="mslbl"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Certifications</div>
+        ${ce}
+      </div>
+    </div>
+  `);
+  $('#modal').addClass('open');
+}
+
+// EVENTS
+$(document).on('input','#searchInput',function(){
+  clearTimeout(deb);
+  const v=$(this).val();
+  v.length?$('#sClear').show():$('#sClear').hide();
+  deb=setTimeout(()=>showSugg(v),160);
+});
+$(document).on('keydown','#searchInput',function(e){
+  if(e.key==='Enter'){const v=$(this).val().trim();if(v)applySearch(v);}
+  if(e.key==='Escape')$('#suggBox').removeClass('open').empty();
+});
+$(document).on('click','#sBtn',function(){const v=$('#searchInput').val().trim();if(v)applySearch(v);});
+$(document).on('click','#sClear',function(){applySearch('');});
+$(document).on('click','.sugg-item',function(){applySearch($(this).data('val'));});
+$(document).on('click','#clrTag',function(){applySearch('');});
+$(document).on('click',function(e){if(!$(e.target).closest('.search-field').length)$('#suggBox').removeClass('open').empty();});
+
+$(document).on('click','.chip',function(){
+  const g=$(this).data('g'),v=$(this).data('v');
+  const k=g==='exp'?'exp':g==='loc'?'loc':g==='sal'?'sal':'notice';
+  if(F[k]===v){F[k]=null;$(this).removeClass('on');}
+  else{F[k]=v;$(`[data-g="${g}"]`).removeClass('on');$(this).addClass('on');}
+  render();
+});
+$(document).on('click','#clearAll',function(){
+  F.exp=F.loc=F.sal=F.notice=null;
+  $('.chip').removeClass('on');
+  applySearch('');
+});
+
+$(document).on('click','.vbtn',function(e){e.stopPropagation();openModal(parseInt($(this).data('id')));});
+$(document).on('click','.ccard',function(){openModal(parseInt($(this).data('id')));});
+$(document).on('click','#mCloseBtn',function(){$('#modal').removeClass('open');});
+$(document).on('click','#modal',function(e){if(e.target===this)$('#modal').removeClass('open');});
+$(document).on('keydown',function(e){if(e.key==='Escape')$('#modal').removeClass('open');});
+
+render();
+</script>
+</body>
+</html>
