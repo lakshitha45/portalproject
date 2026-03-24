@@ -11,23 +11,25 @@ import {
 const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', icon: <FiGrid />, path: '#' },
-    { name: 'Job Management', icon: <FiBriefcase />, path: '#' },
     { name: 'Find Candidates', icon: <FiUsers />, path: '#', active: true },
-    { name: 'Applications', icon: <FiFileText />, path: '#' },
-    { name: 'Analytics', icon: <FiBarChart2 />, path: '#' },
-    { name: 'Company Profile', icon: <FiUser />, path: '#' },
+    { name: 'Upload Resume', icon: <FiFileText />, path: '#' },
   ];
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        <div className="logo-icon">
+      <div className="sidebar-header-h">
+        <div className="logo-icon-v3">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="var(--primary-color)" fillOpacity="0.1" />
-            <path d="M12 8V16M8 12H16" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="5" cy="12" r="3" fill="#f59e0b" />
+            <circle cx="11" cy="7" r="3" fill="#06b6d4" />
+            <circle cx="11" cy="17" r="3" fill="#84cc16" />
+            <circle cx="17" cy="12" r="4" fill="#22d3ee" />
           </svg>
         </div>
-        <h1 className="brand-name">GM TEK <span>TalentConnect</span></h1>
+        <div className="brand-container-h">
+          <span className="brand-gm">GM TEK</span>
+          <span className="brand-connect-h">TalentConnect</span>
+        </div>
       </div>
       
       <nav className="nav-menu">

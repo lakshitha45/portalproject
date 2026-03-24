@@ -16,6 +16,8 @@ import './css/animations.css';
 function App() {
   const { candidates, loading, error, applyFilters, fetchSuggestions } = useCandidates();
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  
   const [filters, setFilters] = useState({
     keywords: ['Java'],
     location: '',
@@ -23,16 +25,15 @@ function App() {
     role: '',
     noticePeriod: '',
     experience: '',
+    salaryRange: '',
     salary: '',
     searchQuery: ''
   });
 
-  // Re-apply filters whenever filter state or candidates change
+  // Re-apply filters whenever filter state changes
   React.useEffect(() => {
-    if (!loading && (candidates.length > 0 || (candidates.length === 0 && !loading))) {
-      applyFilters(filters);
-    }
-  }, [filters, loading]);
+    applyFilters(filters);
+  }, [filters, applyFilters]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -53,6 +54,7 @@ function App() {
       role: '',
       noticePeriod: '',
       experience: '',
+      salaryRange: '',
       salary: '',
       searchQuery: ''
     });
@@ -78,6 +80,8 @@ function App() {
             onFilterChange={handleFilterChange}
             onRemoveKeyword={handleRemoveKeyword}
             onClearAll={handleClearAll}
+            showAdvanced={showAdvanced}
+            setShowAdvanced={setShowAdvanced}
           />
           
           {loading ? (

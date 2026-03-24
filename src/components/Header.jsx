@@ -1,24 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSearch, FiBell, FiUser } from 'react-icons/fi';
+import { FiSearch, FiBell, FiUser, FiClock } from 'react-icons/fi';
 
 const Header = ({ searchQuery, onSearchChange, fetchSuggestions, onSelectCandidate }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const dropdownRef = useRef(null);
 
-  const [loading, setLoading] = useState(false);
+  const recentSearches = ['DevOps Engineer', 'backend'];
+  const trySearching = ['Python Developer', 'Java Developer', 'React Developer', 'Full Stack Developer', 'Data Scientist'];
 
   useEffect(() => {
     const getSuggestions = async () => {
       if (searchQuery.length > 1) {
-        setLoading(true);
         const results = await fetchSuggestions(searchQuery);
         setSuggestions(results);
-        setShowSuggestions(results.length > 0);
-        setLoading(false);
+        setShowSuggestions(true);
       } else {
         setSuggestions([]);
-        setShowSuggestions(false);
+        // Keep dropdown open if focused even without text to show recent/recommended
       }
     };
 
@@ -37,10 +36,9 @@ const Header = ({ searchQuery, onSearchChange, fetchSuggestions, onSelectCandida
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSuggestionClick = (candidate) => {
-    onSelectCandidate(candidate);
+  const handleSuggestionItemClick = (query) => {
+    onSearchChange(query);
     setShowSuggestions(false);
-    onSearchChange(''); // Clear search after selection
   };
 
   return (
@@ -51,31 +49,57 @@ const Header = ({ searchQuery, onSearchChange, fetchSuggestions, onSelectCandida
             <FiSearch />
             <input 
               type="text" 
-              placeholder="Search candidates by name, skills..." 
+              placeholder="Search" 
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              onFocus={() => searchQuery.length > 2 && setShowSuggestions(true)}
+              onFocus={() => setShowSuggestions(true)}
             />
-            <button className="btn btn-primary search-btn">Search</button>
+            <button className="btn-search-primary">Search</button>
           </div>
           
           {showSuggestions && (
             <div className="suggestions-dropdown animate-fade-in">
-              {suggestions.map((c) => (
-                <div 
-                  key={c.id} 
-                  className="suggestion-item"
-                  onClick={() => handleSuggestionClick(c)}
-                >
-                  <div className="suggestion-avatar">
-                    <FiUser />
+              {searchQuery.length < 2 ? (
+                <>
+                  <div className="suggestions-section">
+                    <div className="section-header">
+                      <span>RECENT</span>
+                      <button className="clear-btn">Clear</button>
+                    </div>
+                    {recentSearches.map((item, idx) => (
+                      <div key={idx} className="suggestion-item" onClick={() => handleSuggestionItemClick(item)}>
+                        <FiClock /> <span className="text">{item}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="suggestion-info">
-                    <span className="name">{c.name}</span>
-                    <span className="role">{c.role}</span>
+
+                  <div className="suggestions-section">
+                    <div className="section-header">
+                      <span>TRY SEARCHING FOR</span>
+                    </div>
+                    {trySearching.map((item, idx) => (
+                      <div key={idx} className="suggestion-item" onClick={() => handleSuggestionItemClick(item)}>
+                        <FiSearch /> <span className="text">{item}</span>
+                      </div>
+                    ))}
                   </div>
+                </>
+              ) : (
+                <div className="suggestions-section">
+                  <div className="section-header">
+                    <span>SUGGESTIONS</span>
+                  </div>
+                  {suggestions.length > 0 ? (
+                    suggestions.map((item, idx) => (
+                      <div key={idx} className="suggestion-item" onClick={() => handleSuggestionItemClick(item)}>
+                        <FiSearch /> <span className="text">{item}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="suggestion-item"><span className="text" style={{ color: '#94a3b8' }}>No matches found</span></div>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

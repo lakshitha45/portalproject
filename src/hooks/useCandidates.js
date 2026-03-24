@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api/config';
 
 // Mock data for initial development if API is not running
@@ -47,26 +47,27 @@ const useCandidates = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const normalizeCandidates = useCallback((data) => {
+    return data.map(c => ({
+      ...c,
+      role: c.jobRole || c.role || 'Professional',
+      skills: typeof c.skills === 'string' 
+        ? c.skills.split(',').map(s => s.trim()) 
+        : Array.isArray(c.skills) ? c.skills : [],
+      experienceInt: typeof c.experience === 'number' ? c.experience : parseInt(c.experience) || 0,
+      experience: typeof c.experience === 'number' 
+        ? `${c.experience} Years` 
+        : c.experience,
+      salaryRange: c.salaryRange || (c.expectedSalary ? `${c.expectedSalary} LPA` : 'Not specified')
+    }));
+  }, []);
+
   useEffect(() => {
     const fetchCandidates = async () => {
       try {
         setLoading(true);
-        // Fetching from backend on port 8080
         const response = await api.get('/candidates');
-        
-        // Normalize data
-        const normalizedData = response.data.map(c => ({
-          ...c,
-          role: c.jobRole || c.role || 'Professional',
-          skills: typeof c.skills === 'string' 
-            ? c.skills.split(',').map(s => s.trim()) 
-            : Array.isArray(c.skills) ? c.skills : [],
-          experienceInt: typeof c.experience === 'number' ? c.experience : parseInt(c.experience) || 0,
-          experience: typeof c.experience === 'number' 
-            ? `${c.experience} Years` 
-            : c.experience,
-          salaryRange: c.salaryRange || 'Not specified'
-        }));
+        const normalizedData = normalizeCandidates(response.data);
 
         setCandidates(normalizedData);
         setFilteredCandidates(normalizedData);
@@ -79,46 +80,47 @@ const useCandidates = () => {
     };
 
     fetchCandidates();
-  }, []);
+  }, [normalizeCandidates]);
 
-  const fetchSuggestions = async (query) => {
+  const fetchSuggestions = useCallback(async (query) => {
     if (!query) return [];
     try {
-      const response = await api.get(`/candidates/suggestions?query=${query}`);
-      // Normalize suggestions
-      return response.data.map(c => ({
-        ...c,
-        role: c.jobRole || c.role || 'Professional',
-        skills: typeof c.skills === 'string' 
-          ? c.skills.split(',').map(s => s.trim()) 
-          : Array.isArray(c.skills) ? c.skills : [],
-        experienceInt: typeof c.experience === 'number' ? c.experience : parseInt(c.experience) || 0,
-        experience: typeof c.experience === 'number' 
-          ? `${c.experience} Years` 
-          : c.experience,
-      }));
+      const response = await api.get(`/candidates/suggestions?query=${encodeURIComponent(query)}`);
+      // The backend now returns a List<String>, so we don't need to normalize it like candidates
+      return response.data;
     } catch (err) {
       console.error('Suggestion Error:', err);
       return [];
     }
-  };
+  }, []); // No need for normalizeCandidates dependency here anymore
 
-  const applyFilters = async (filters, useBackend = false) => {
-    // We'll stick to client-side filtering for the expanded fields to avoid backend changes
+  const applyFilters = useCallback(async (filters) => {
     let result = [...candidates];
 
-    // 1. Header Search Query (Name, Role, Skills, Location)
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      result = result.filter(c => 
-        c.name.toLowerCase().includes(query) ||
-        c.role.toLowerCase().includes(query) ||
-        c.skills.some(skill => skill.toLowerCase().includes(query)) ||
-        c.location.toLowerCase().includes(query) ||
-        (c.locality && c.locality.toLowerCase().includes(query))
-      );
+    // If there is a search query, fetch from backend to use intelligent search
+    if (filters.searchQuery && filters.searchQuery.trim().length > 0) {
+      try {
+        setLoading(true);
+        const response = await api.get(`/candidates/search?query=${encodeURIComponent(filters.searchQuery)}`);
+        result = normalizeCandidates(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Search API Error:', err);
+        // Fallback to client-side search if API fails
+        const query = filters.searchQuery.toLowerCase();
+        result = result.filter(c => 
+          c.name.toLowerCase().includes(query) ||
+          c.role.toLowerCase().includes(query) ||
+          c.skills.some(skill => skill.toLowerCase().includes(query))
+        );
+        setLoading(false);
+      }
+    } else {
+      // If no search query, start with all candidates
+      result = [...candidates];
     }
 
+    // Apply other filters locally on the results
     // 2. Job Position / Role
     if (filters.role && filters.role !== '') {
       result = result.filter(c => 
@@ -174,7 +176,7 @@ const useCandidates = () => {
     }
 
     setFilteredCandidates(result);
-  };
+  }, [candidates, normalizeCandidates]);
 
   return { candidates: filteredCandidates, loading, error, applyFilters, fetchSuggestions };
 };

@@ -1,51 +1,63 @@
 import React from 'react';
-import { FiMapPin, FiBriefcase, FiBookmark, FiFileText, FiMail, FiUser } from 'react-icons/fi';
+import { FiMapPin, FiBriefcase, FiBookmark, FiEye, FiFileText, FiMail } from 'react-icons/fi';
 
 const CandidateCard = ({ candidate, onViewProfile }) => {
   const { name, role, location, experience, salaryRange, skills, noticePeriod } = candidate;
 
+  // For demo purposes, we'll randomize or use specific values for the status badge
+  const statusDays = noticePeriod === 'Immediate' ? 'Immediate' : noticePeriod.split(' ')[0] + ' days';
+
   return (
-    <div 
-      className="candidate-card animate-fade-in clickable-card" 
-      onClick={onViewProfile}
-    >
-      <div className="card-header">
-        <div className="card-user-info">
-          <div className="card-avatar">
-            {name.split(' ').map(n => n[0]).join('')}
+    <div className="candidate-card-v2 animate-fade-in">
+      <div className="card-top-actions">
+        <button className="bookmark-icon-btn">
+          <FiBookmark size={18} />
+        </button>
+      </div>
+
+      <div className="card-main-content">
+        <div className="card-avatar-v2">
+          {name.split(' ').map(n => n[0]).join('')}
+        </div>
+        
+        <div className="card-info-v2">
+          <h3 className="card-name-v2">{name}</h3>
+          <p className="card-role-v2">{role || candidate.jobRole}</p>
+          
+          <div className="card-meta-v2">
+            <span><FiMapPin size={14} /> {location}</span>
+            <span><FiBriefcase size={14} /> {experience}</span>
           </div>
-          <div className="card-details">
-            <h3>{name}</h3>
-            <p className="card-role">{role}</p>
-            <div className="card-meta">
-              <span><FiMapPin size={14} /> {location}</span>
-              <span><FiBriefcase size={14} /> {experience}</span>
-            </div>
+
+          <div className="card-badge-container">
+            <span className="status-badge-v2">
+              <span className="dot"></span> {statusDays}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="card-stats">
-        <div className="notice-chip chip-gray chip">
-          {noticePeriod}
+      <div className="card-salary-info">
+        <div className="salary-box">
+          <span className="currency">₹</span>
+          <span className="amount">{typeof salaryRange === 'string' ? salaryRange.match(/(\d+)/)?.[0] || salaryRange : salaryRange}.0</span>
         </div>
-        <div className="card-salary">
-          <span className="salary-label">Expected Range</span>
-          <span className="salary-range">₹{salaryRange}</span>
-        </div>
+        <span className="salary-type">Expected Range</span>
       </div>
 
-      <div className="card-tags">
-        {skills.slice(0, 5).map((skill, index) => (
-          <span key={index} className="chip">
-            {skill}
-          </span>
+      <div className="card-skills-row">
+        {skills.slice(0, 3).map((skill, index) => (
+          <span key={index} className="skill-tag-v2">{skill}</span>
         ))}
-        {skills.length > 5 && <span className="chip chip-gray">+{skills.length - 5} more</span>}
+        {skills.length > 3 && <span className="skill-tag-v2 more">+{skills.length - 3}</span>}
       </div>
-      
-      <div className="card-action-hint">
-        Click to view full profile & contact info
+
+      <div className="card-footer-v2">
+        <button className="view-profile-btn" onClick={onViewProfile}>
+          <FiEye /> View Profile
+        </button>
+        <button className="action-icon-btn"><FiFileText /></button>
+        <button className="action-icon-btn"><FiMail /></button>
       </div>
     </div>
   );
