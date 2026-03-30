@@ -57,3 +57,14 @@
   align-items: center;
   gap: var(--spacing-2);
 }
+
+.similar-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--shadow-md);
+  background-color: #f8faff !important;
+}
+
+.similar-card:active {
+  transform: translateY(0);
+}

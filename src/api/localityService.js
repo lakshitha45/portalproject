@@ -1,177 +1,133 @@
-import axios from 'axios';
-
-// Local fallback data for Indian cities and their sub-localities
-const FALLBACK_LOCALITIES = {
-  'Chennai': ['Adyar', 'Anna Nagar', 'Guindy', 'Kodambakkam', 'Mylapore', 'Perambur', 'Porur', 'Sholinganallur', 'T. Nagar', 'Velachery'],
-  'Bangalore': ['Whitefield', 'Koramangala', 'Indiranagar', 'Cunningham Road', 'MG Road', 'Malleswaram', 'Yeshwanthpur', 'Jayanagar', 'Banashankari', 'Domlur'],
-  'Mumbai': ['Bandra', 'Dadar', 'Fort', 'Goregaon', 'Juhu', 'Malad', 'Marine Drive', 'Navi Mumbai', 'Powai', 'Thane'],
-  'Hyderabad': ['Madhapur', 'Gachibowli', 'Kondapur', 'Banjara Hills', 'Secunderabad', 'Jubilee Hills', 'Ameerpet', 'Kukatpally', 'Charminar', 'Abids'],
-  'Pune': ['Hinjewadi', 'Magarpatta', 'Kalyani Nagar', 'Koregaon Park', 'Camp', 'Deccan', 'Model Colony', 'Wanowrie', 'Baner', 'Viman Nagar'],
-  'Coimbatore': ['Peelamedu', 'Gandhipuram', 'Ukkadam', 'Kuniyamuthur', 'RS Puram', 'Koniampalayam', 'Thadagam', 'Saibaba Colony', 'Tatabad', 'North Coimbatore'],
-  'Dindigul': ['Dindigul Town', 'Natarampalli', 'Salem Road', 'Gnanodaya Nagar', 'Veerapandi', 'Oddanchatram', 'Nilakottai', 'Batlagundu', 'Attur', 'Palacode'],
-  'Erode': ['Erode City', 'Erode Town', 'Bhavani', 'Perundurai', 'Gobichettipalayam', 'Modakurichi', 'Salem Junction', 'Nambiyur', 'Kodumudi', 'Sathyamangalam'],
-  'Madurai': ['Madurai City', 'Madurai East', 'Madurai West', 'Paravai', 'Sellur', 'Avaniyapuram', 'Tirupparankundram', 'Vandiyur', 'Melur', 'Thirumangalam'],
-  'Nagercoil': ['Nagercoil Town', 'Colachel', 'Padmanabhapuram', 'Eraniel', 'Pechiparai', 'Valliyur', 'Sankarankovil', 'Tenkasi', 'Tirunelveli', 'Morningside'],
-  'Salem': ['Salem City', 'Salem North', 'Salem South', 'Athankarai', 'Pagudampalayam', 'Bethelpet', 'Kondalampatti', 'Suramangalam', 'Vedaranyam', 'Omalur'],
-  'Thanjavur': ['Thanjavur Town', 'Kumbakonam', 'Mayiladuthurai', 'Papanasam', 'Thirukkoshtyur', 'Mannargudi', 'Needamangalam', 'Kollidam', 'Aravidu', 'Tanjore City'],
-  'Thoothukudi': ['Thoothukudi Town', 'Tirunelveli', 'Nagercoil', 'Kayalpatnam', 'Tvm', 'Udangudi', 'Sathankulam', 'Alwarkurichi', 'Thisayanvilai', 'Kanyakumari'],
-  'Tiruchirappalli': ['Trichy City', 'Trichy East', 'Trichy West', 'Srirangam', 'Samayapuram', 'Pudukkottai', 'Ariyalur', 'Jayamkondam', 'Musiri', 'Thuraiyur'],
-  'Tiruppur': ['Tiruppur City', 'Avinashi', 'Kangeyam', 'Uthukuli', 'Noyyal', 'Moolapalayam', 'Velukkudi', 'Palladam', 'Annur', 'Dharapuram'],
-  'Vellore': ['Vellore Town', 'Vellore City', 'Kanchipuram', 'Ranipet', 'Tirupati', 'Chittoor', 'Andhra Pradesh Border', 'Gandarvakottai', 'Gudiyattam', 'Sholinghur']
-};
-
-// Cache to avoid repeated API calls
-const localityCache = new Map();
-
-// Nominatim API - Free, no key required (OpenStreetMap)
-const fetchFromNominatim = async (city) => {
-  try {
-    const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-      params: {
-        q: `${city}, India`,
-        format: 'json',
-        limit: 1
-      },
-      timeout: 5000
-    });
-
-    if (response.data.length === 0) return null;
-
-    const { lat, lon } = response.data[0];
-
-    // Fetch nearby places using Nominatim reverse geocoding with zoom for sub-localities
-    const reverseResponse = await axios.get('https://nominatim.openstreetmap.org/reverse', {
-      params: {
-        format: 'json',
-        lat,
-        lon,
-        zoom: 12,
-        addressdetails: 1
-      },
-      timeout: 5000
-    });
-
-    // Extract neighborhoods/sub-localities from address details
-    const address = reverseResponse.data.address || {};
-    const neighborhoods = [];
-
-    if (address.neighbourhood) neighborhoods.push(address.neighbourhood);
-    if (address.suburb) neighborhoods.push(address.suburb);
-    if (address.village) neighborhoods.push(address.village);
-    if (address.hamlet) neighborhoods.push(address.hamlet);
-
-    return neighborhoods.length > 0 ? neighborhoods : null;
-  } catch (error) {
-    console.warn('Nominatim API failed:', error.message);
-    return null;
-  }
-};
-
-// Overpass API - Advanced OSM querying (Free, no key required)
-const fetchFromOverpass = async (city) => {
-  try {
-    const query = `
-      [bbox:-90,-180,90,180];
-      (
-        node["name"="${city}"]["admin_level"=8];
-        way["name"="${city}"]["admin_level"=8];
-        relation["name"="${city}"]["admin_level"=8];
-      );
-      out center;
-    `;
-
-    const response = await axios.post('https://overpass-api.de/api/interpreter', query, {
-      timeout: 5000,
-      headers: { 'Content-Type': 'text/plain' }
-    });
-
-    // Parse neighborhoods from response
-    if (response.data.elements && response.data.elements.length > 0) {
-      const neighborhoods = response.data.elements
-        .filter(el => el.tags?.name)
-        .map(el => el.tags.name)
-        .filter(name => name !== city);
-      return neighborhoods.length > 0 ? neighborhoods : null;
-    }
-    return null;
-  } catch (error) {
-    console.warn('Overpass API failed:', error.message);
-    return null;
-  }
-};
-
-// Google Places API integration (if keys are provided via backend proxy)
-// This requires backend support to avoid exposing API keys
-// Placeholder for future implementation
-// const fetchFromGooglePlaces = async (city, googleApiKey) => {
-//   if (!googleApiKey) return null;
-//   try {
-//     return null; // Implement after backend proxy is ready
-//   } catch (error) {
-//     console.warn('Google Places API failed:', error.message);
-//     return null;
-//   }
-// };
+import { State, City } from 'country-state-city';
+import api from './config';
 
 /**
- * Fetch localities for a city with multi-source fallback
- * Priority: Nominatim → Overpass → Fallback data
+ * Get all Indian states from the country-state-city package.
+ * Returns array of { value: isoCode, label: stateName }
  */
-export const fetchLocalitiesMultiSource = async (city) => {
+export const getIndianStates = () => {
+  const states = State.getStatesOfCountry('IN');
+  return states
+    .map(s => ({ value: s.isoCode, label: s.name }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+};
+
+/**
+ * Get all cities/districts for a given Indian state ISO code.
+ * Returns array of { value: cityName, label: cityName }
+ */
+export const getCitiesOfState = (stateIsoCode) => {
+  if (!stateIsoCode) return [];
+  const cities = City.getCitiesOfState('IN', stateIsoCode);
+  return cities
+    .map(c => ({ value: c.name, label: c.name }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+};
+
+/**
+ * Get the state name from its ISO code.
+ */
+export const getStateNameByCode = (isoCode) => {
+  if (!isoCode) return '';
+  const states = State.getStatesOfCountry('IN');
+  const state = states.find(s => s.isoCode === isoCode);
+  return state ? state.name : isoCode;
+};
+
+/**
+ * Fetch distinct localities from the backend DB for a given state + district/city.
+ * Backend endpoint: GET /api/candidates/localities?state=<stateName>&city=<cityName>
+ * Returns array of { value: locality, label: locality }
+ */
+export const fetchLocalitiesFromDB = async (stateName, city) => {
   if (!city) return [];
+  try {
+    const params = new URLSearchParams();
+    if (stateName) params.append('state', stateName);
+    if (city) params.append('city', city);
 
-  // Check cache first
-  if (localityCache.has(city)) {
-    return localityCache.get(city);
+    const response = await api.get(`/candidates/localities?${params.toString()}`);
+    const data = response.data || [];
+    return data
+      .filter(loc => loc && loc.trim() !== '')
+      .map(loc => ({ value: loc, label: loc }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  } catch (err) {
+    console.warn('Failed to fetch localities from DB:', err.message);
+    return [];
   }
-
-  let localities = null;
-
-  // Try Nominatim first (fastest for most Indian cities)
-  localities = await fetchFromNominatim(city);
-
-  // Try Overpass if Nominatim fails
-  if (!localities || localities.length === 0) {
-    localities = await fetchFromOverpass(city);
-  }
-
-  // Fall back to hardcoded data
-  if (!localities || localities.length === 0) {
-    localities = FALLBACK_LOCALITIES[city] || [];
-  }
-
-  // Deduplicate and cache
-  const unique = [...new Set(localities)];
-  localityCache.set(city, unique);
-
-  return unique;
 };
-
 /**
- * Get all Indian states and their cities
+ * Fetch localities from Geoapify using Geocoding and Places API.
+ * 1. Geocode District + State to get (lat, lng)
+ * 2. Get nearby localities using Places API
  */
-export const getIndianStatesAndCities = () => {
-  return {
-    'Tamil Nadu': Object.keys(FALLBACK_LOCALITIES).filter(city => 
-      ['Chennai', 'Coimbatore', 'Dindigul', 'Erode', 'Madurai', 'Nagercoil', 'Salem', 'Thanjavur', 'Thoothukudi', 'Tiruchirappalli', 'Tiruppur', 'Vellore'].includes(city)
-    ),
-    'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum'],
-    'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Aurangabad'],
-    'Telangana': ['Hyderabad', 'Secunderabad', 'Warangal', 'Vijayawada'],
-    'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer'],
-    'Delhi': ['New Delhi', 'Delhi Central', 'East Delhi', 'West Delhi', 'North Delhi']
-  };
-};
+const GEOAPIFY_KEY = 'ac51442bcce84542aa265a99ae2dda34';
 
-// Clear cache if needed
-export const clearLocalityCache = () => {
-  localityCache.clear();
-};
+export const fetchLocalitiesFromGeoapify = async (district, stateName) => {
+  if (!district) return [];
 
-// Get cache stats (for debugging)
-export const getCacheStats = () => {
-  return {
-    size: localityCache.size,
-    keys: Array.from(localityCache.keys())
-  };
+  try {
+    // Step 1: Geocode the address (District, State, India)
+    const searchText = encodeURIComponent(`${district}, ${stateName}, India`);
+    const geoResponse = await fetch(
+      `https://api.geoapify.com/v1/geocode/search?text=${searchText}&apiKey=${GEOAPIFY_KEY}`
+    );
+    const geoData = await geoResponse.json();
+
+    if (!geoData.features || geoData.features.length === 0) {
+      console.warn('Geocoding failed for:', district);
+      return [];
+    }
+
+    const [lng, lat] = geoData.features[0].geometry.coordinates;
+
+    // Step 2: Fetch Places (Suburbs and Neighbourhoods)
+    // We use 'populated_place.suburb' and 'populated_place.neighbourhood' for human-friendly names (e.g., Mylapore, T. Nagar).
+    // 'administrative.county_level' is included as a fallback for areas like Salem Taluks.
+    const placesResponse = await fetch(
+      `https://api.geoapify.com/v2/places?categories=populated_place.suburb,populated_place.neighbourhood,administrative.suburb_level,administrative.neighbourhood_level,administrative.county_level&filter=circle:${lng},${lat},30000&limit=50&apiKey=${GEOAPIFY_KEY}`
+    );
+    const placesData = await placesResponse.json();
+
+    if (!placesData.features || placesData.features.length === 0) {
+      return [];
+    }
+
+    // Extract and clean names, ensuring they are unique and filtered of technical codes
+    const localities = [
+      ...new Set(
+        placesData.features
+          .map((f) => {
+            const p = f.properties;
+            let name = p.name || '';
+
+            // 1. Strip 'Zone X' or 'Ward X' prefixes (e.g., 'Zone 10 Kodambakkam' -> 'Kodambakkam')
+            const cleanPattern = /^(Zone|Ward)\s+\d+\s*(.*)/i;
+            const match = cleanPattern.exec(name);
+            if (match && match[2] && match[2].trim() !== '') {
+              name = match[2].trim();
+            }
+
+            // 2. If the name is still just a technical code (e.g., 'Ward 139'), 
+            // fallback to other descriptive properties if they exist and aren't technical themselves.
+            const isTechnical = /^(Ward|Zone)\s+\d+$/i.test(name);
+            if (isTechnical) {
+              const altName = [p.suburb, p.neighbourhood, p.district]
+                .find(val => val && !/^(Ward|Zone)\s+\d+/i.test(val));
+              name = altName || '';
+            }
+
+            return name.trim();
+          })
+          .filter(name => name.length > 1) // Discard empty or single-character strings
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+
+    return localities.map(loc => ({ value: loc, label: loc }));
+
+  } catch (error) {
+    console.warn("Error fetching localities from Geoapify:", error);
+    return [];
+  }
 };

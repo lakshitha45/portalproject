@@ -3,30 +3,16 @@ import CandidateCard from './CandidateCard';
 
 const CandidateGrid = ({ candidates, onSelectCandidate }) => {
   return (
-    <div className="candidates-grid-container">
-      <div className="grid-header">
-        <h2 className="results-count">Found <span>{candidates.length}</span> candidates</h2>
-        <div className="grid-actions">
-          <span>Sort by:</span>
-          <select className="sort-select">
-            <option>Relevance</option>
-            <option>Salary: Low to High</option>
-            <option>Salary: High to Low</option>
-            <option>Experience</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="candidate-grid">
+    <div className="candidates-container mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {candidates.map(candidate => (
-          <CandidateCard 
-            key={candidate.id} 
-            candidate={candidate} 
+          <CandidateCard
+            key={candidate.id}
+            candidate={candidate}
             onViewProfile={() => onSelectCandidate(candidate)}
           />
         ))}
       </div>
-
     </div>
   );
 };

@@ -47,8 +47,8 @@ const CandidateDetail = ({ candidate, onClose }) => {
       </div>
 
       {expectedSalary && (
-        <div className="detail-salary">
-          {expectedSalary >= 100000 ? expectedSalary / 100000 : expectedSalary} LPA
+        <div className="detail-salary" style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
+          {parseInt(expectedSalary) >= 100000 ? Math.round(parseInt(expectedSalary) / 100000) : expectedSalary} LPA
         </div>
       )}
 
@@ -90,9 +90,6 @@ const CandidateDetail = ({ candidate, onClose }) => {
         </div>
       </div>
 
-      <div className="detail-actions">
-        <button className="btn btn-primary" style={{ width: '100%', borderRadius: 'var(--radius-md)', padding: 'var(--spacing-3)' }}>Schedule Interview</button>
-      </div>
     </div>
   );
 };

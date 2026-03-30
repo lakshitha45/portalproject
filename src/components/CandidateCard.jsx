@@ -8,56 +8,61 @@ const CandidateCard = ({ candidate, onViewProfile }) => {
   const statusDays = noticePeriod === 'Immediate' ? 'Immediate' : noticePeriod.split(' ')[0] + ' days';
 
   return (
-    <div className="candidate-card-v2 animate-fade-in">
-      <div className="card-top-actions">
-        <button className="bookmark-icon-btn">
-          <FiBookmark size={18} />
-        </button>
-      </div>
-
-      <div className="card-main-content">
-        <div className="card-avatar-v2">
-          {name.split(' ').map(n => n[0]).join('')}
+    <div 
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group flex flex-col h-full relative"
+      onClick={onViewProfile}
+    >
+      <div className="p-5 flex-1">
+        <div className="flex gap-4 mb-4">
+          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm shrink-0 border border-blue-100">
+            {name.split(' ').map(n => n[0]).join('')}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[17px] font-bold text-gray-800 leading-tight truncate">{name}</h3>
+            <p className="text-gray-500 text-sm mt-0.5">{role || candidate.jobRole}</p>
+          </div>
         </div>
-        
-        <div className="card-info-v2">
-          <h3 className="card-name-v2">{name}</h3>
-          <p className="card-role-v2">{role || candidate.jobRole}</p>
+
+        <div className="space-y-2 mb-6 text-gray-400 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <FiMapPin className="text-gray-300" /> {location}
+          </div>
+          <div className="flex items-center gap-2">
+            <FiBriefcase className="text-gray-300" /> {experience}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex flex-col gap-2">
+            <span className="bg-gray-50 text-gray-500 text-[10px] px-2 py-0.5 rounded-full w-max border border-gray-100">{statusDays}</span>
+            <div className="flex gap-1.5 flex-wrap">
+              {skills.slice(0, 2).map((skill, index) => (
+                <span key={index} className="bg-blue-50/50 text-blue-500 text-[10px] px-2 py-0.5 rounded border border-blue-50">{skill}</span>
+              ))}
+            </div>
+          </div>
           
-          <div className="card-meta-v2">
-            <span><FiMapPin size={14} /> {location}</span>
-            <span><FiBriefcase size={14} /> {experience}</span>
-          </div>
-
-          <div className="card-badge-container">
-            <span className="status-badge-v2">
-              <span className="dot"></span> {statusDays}
-            </span>
+          <div className="text-right">
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Salary</p>
+            <p className="text-xl font-black text-green-600 leading-none">
+              {(() => {
+                const s = salaryRange || candidate.expectedSalary || '8';
+                if (typeof s === 'string' && s.includes('-')) {
+                  return s.split('-').map(part => {
+                    const num = parseInt(part.replace(/[^0-9]/g, ''));
+                    return num >= 100000 ? Math.round(num/100000) : part;
+                  }).join('-');
+                }
+                const num = parseInt(s.toString().replace(/[^0-9]/g, ''));
+                return num >= 100000 ? Math.round(num/100000) : s;
+              })()} <span className="text-sm font-bold">LPA</span>
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="card-salary-info">
-        <div className="salary-box">
-          <span className="currency">₹</span>
-          <span className="amount">{typeof salaryRange === 'string' ? salaryRange.match(/(\d+)/)?.[0] || salaryRange : salaryRange}.0</span>
-        </div>
-        <span className="salary-type">Expected Range</span>
-      </div>
-
-      <div className="card-skills-row">
-        {skills.slice(0, 3).map((skill, index) => (
-          <span key={index} className="skill-tag-v2">{skill}</span>
-        ))}
-        {skills.length > 3 && <span className="skill-tag-v2 more">+{skills.length - 3}</span>}
-      </div>
-
-      <div className="card-footer-v2">
-        <button className="view-profile-btn" onClick={onViewProfile}>
-          <FiEye /> View Profile
-        </button>
-        <button className="action-icon-btn"><FiFileText /></button>
-        <button className="action-icon-btn"><FiMail /></button>
+      <div className="bg-blue-50/40 text-blue-600 text-[11px] font-bold py-2.5 text-center border-t border-gray-50 rounded-b-2xl group-hover:bg-blue-50 transition-colors">
+        Click to view full profile & contact info
       </div>
     </div>
   );

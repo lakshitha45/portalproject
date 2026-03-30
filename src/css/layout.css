@@ -8,12 +8,12 @@
 
 /* Sidebar Styling */
 .sidebar {
-  width: 260px;
+  width: 280px;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
   top: 0;
   height: 100vh;
   z-index: 40;
@@ -96,9 +96,19 @@
 /* Main Content Area */
 .main-content {
   flex: 1;
+  margin-left: 280px; /* Width of Sidebar */
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-color);
   min-width: 0;
+}
+
+.content-area {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
 }
 
 /* Header Styling */
@@ -273,7 +283,7 @@
 
 .direct-contact-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--spacing-3);
   margin-top: var(--spacing-4);
 }
@@ -281,11 +291,11 @@
 .contact-btn {
   display: flex;
   align-items: center;
-  gap: var(--spacing-4);
-  padding: var(--spacing-4) var(--spacing-6);
-  border-radius: var(--radius-lg);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  font-weight: 600;
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
 }
@@ -296,34 +306,39 @@
 
 .gmail-btn {
   background: #fff;
-  color: #ea4335;
+  border-color: #f1f5f9;
 }
 
 .gmail-btn:hover {
   background: #fff5f4;
   border-color: #ea4335;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(234, 67, 53, 0.1);
 }
 
 .whatsapp-btn {
-  background: #25d366;
-  color: white;
-  border: none;
+  background: #fff;
+  border-color: #f1f5f9;
 }
 
 .whatsapp-btn:hover {
-  background: #128c7e;
-  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+  background: #f0fdf4;
+  border-color: #25d366;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.1);
 }
 
 .call-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
+  background: #fff;
+  border-color: #f1f5f9;
+  color: var(--primary-color);
 }
 
 .call-btn:hover {
-  background: var(--primary-hover);
-  box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3);
+  background: #eff6ff;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
 }
 
 /* Page Content Container */

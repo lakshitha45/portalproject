@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import HeroBanner from './components/HeroBanner';
 import FilterSection from './components/FilterSection';
 import CandidateGrid from './components/CandidateGrid';
 import CandidateModal from './components/CandidateModal';
@@ -12,21 +11,26 @@ import './css/layout.css';
 import './css/components.css';
 import './css/modal.css';
 import './css/animations.css';
+import './css/searchable-dropdown.css';
 
 function App() {
-  const { candidates, loading, error, applyFilters, fetchSuggestions } = useCandidates();
+  const { candidates, allCandidates, loading, error, applyFilters, fetchSuggestions } = useCandidates();
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  
   const [filters, setFilters] = useState({
-    keywords: ['Java'],
+    keywords: [],
     location: '',
+    district: '',
     locality: '',
     role: '',
     noticePeriod: '',
     experience: '',
     salaryRange: '',
     salary: '',
+    workMode: '',
+    education: '',
+    jobRole: '',
+    skillFilter: '',
     searchQuery: ''
   });
 
@@ -39,67 +43,74 @@ function App() {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleRemoveKeyword = (keyword) => {
+  // Clear All => only resets advanced filters, keeps search text/keywords
+  const handleClearAll = () => {
     setFilters(prev => ({
       ...prev,
-      keywords: prev.keywords.filter(k => k !== keyword)
-    }));
-  };
-
-  const handleClearAll = () => {
-    setFilters({
-      keywords: [],
       location: '',
+      district: '',
       locality: '',
       role: '',
       noticePeriod: '',
       experience: '',
       salaryRange: '',
       salary: '',
+      workMode: '',
+      education: '',
+      jobRole: '',
+      skillFilter: ''
+    }));
+  };
+
+  // Clear Search => only resets keywords and searchQuery
+  const handleClearSearch = () => {
+    setFilters(prev => ({
+      ...prev,
+      keywords: [],
       searchQuery: ''
-    });
+    }));
   };
 
   return (
     <div className="app-container">
       <Sidebar />
-      
-      <main className="main-content">
-        <Header 
-          searchQuery={filters.searchQuery}
-          onSearchChange={(val) => handleFilterChange('searchQuery', val)}
-          fetchSuggestions={fetchSuggestions}
-          onSelectCandidate={setSelectedCandidate}
-        />
-        
-        <div className="page-container">
-          <HeroBanner />
-          
+      <div className="main-content">
+        <div className="content-area">
           <FilterSection 
             filters={filters}
             onFilterChange={handleFilterChange}
-            onRemoveKeyword={handleRemoveKeyword}
             onClearAll={handleClearAll}
+            onClearSearch={handleClearSearch}
             showAdvanced={showAdvanced}
             setShowAdvanced={setShowAdvanced}
+            fetchSuggestions={fetchSuggestions}
+            allCandidates={allCandidates}
           />
           
           {loading ? (
-            <div className="loading-state" style={{ padding: 'var(--spacing-12)', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Loading talented candidates...
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Finding the best candidates for you...</p>
             </div>
           ) : error ? (
-            <div className="error-state">Error: {error}</div>
+            <div className="error-state">
+              <p>Oops! {error}</p>
+              <button onClick={() => applyFilters(filters)}>Try Again</button>
+            </div>
           ) : (
-            <CandidateGrid candidates={candidates} onSelectCandidate={setSelectedCandidate} />
+            <CandidateGrid 
+              candidates={candidates}
+              onSelectCandidate={setSelectedCandidate}
+            />
           )}
         </div>
-      </main>
+      </div>
 
       {selectedCandidate && (
         <CandidateModal 
-          candidate={selectedCandidate} 
-          onClose={() => setSelectedCandidate(null)} 
+          candidate={selectedCandidate}
+          onClose={() => setSelectedCandidate(null)}
+          onSelectCandidate={setSelectedCandidate}
         />
       )}
     </div>

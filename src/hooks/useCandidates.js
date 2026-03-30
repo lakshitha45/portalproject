@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../api/config';
+import { getStateNameByCode } from '../api/localityService';
 
 // Mock data for initial development if API is not running
 const MOCK_CANDIDATES = [
@@ -95,90 +96,112 @@ const useCandidates = () => {
   }, []); // No need for normalizeCandidates dependency here anymore
 
   const applyFilters = useCallback(async (filters) => {
-    let result = [...candidates];
-
-    // If there is a search query, fetch from backend to use intelligent search
-    if (filters.searchQuery && filters.searchQuery.trim().length > 0) {
-      try {
-        setLoading(true);
-        const response = await api.get(`/candidates/search?query=${encodeURIComponent(filters.searchQuery)}`);
-        result = normalizeCandidates(response.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Search API Error:', err);
-        // Fallback to client-side search if API fails
-        const query = filters.searchQuery.toLowerCase();
-        result = result.filter(c => 
-          c.name.toLowerCase().includes(query) ||
-          c.role.toLowerCase().includes(query) ||
-          c.skills.some(skill => skill.toLowerCase().includes(query))
-        );
-        setLoading(false);
+    try {
+      setLoading(true);
+      
+      const params = new URLSearchParams();
+      // Only send parameters that the backend currently handles (as per current SearchService.java)
+      const chips = filters.keywords || [];
+      const typing = (filters.searchQuery || '').trim().split(/[\s,]+/).filter(Boolean);
+      const allTerms = [...chips, ...typing];
+      
+      if (allTerms.length > 0) {
+        // We only send the first term to the backend to get a candidate set, 
+        // because the current backend SearchService doesn't handle multi-term searching well.
+        const value = allTerms[0];
+        console.log("Searching:", value);
+        params.append('keyword', value);
       }
-    } else {
-      // If no search query, start with all candidates
-      result = [...candidates];
-    }
+      if (filters.location) params.append('location', getStateNameByCode(filters.location));
+      if (filters.district) params.append('city', filters.district);
+      if (filters.locality) params.append('subLocality', filters.locality);
 
-    // Apply other filters locally on the results
-    // 2. Job Position / Role
-    if (filters.role && filters.role !== '') {
-      result = result.filter(c => 
-        c.role.toLowerCase().includes(filters.role.toLowerCase())
-      );
-    }
+      // We still send these just in case the backend is updated later
+      if (filters.experience) params.append('experience', filters.experience);
+      if (filters.workMode) params.append('workMode', filters.workMode);
+      if (filters.salaryRange) params.append('salary', filters.salaryRange);
+      if (filters.noticePeriod) params.append('noticePeriod', filters.noticePeriod);
+      if (filters.education) params.append('education', filters.education);
 
-    // 3. Location & Locality
-    if (filters.location) {
-      result = result.filter(c => 
-        c.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-    if (filters.locality) {
-      result = result.filter(c => 
-        c.locality && c.locality.toLowerCase().includes(filters.locality.toLowerCase())
-      );
-    }
-
-    // 4. Experience
-    if (filters.experience) {
-      result = result.filter(c => c.experienceInt >= parseInt(filters.experience));
-    }
-
-    // 5. Notice Period
-    if (filters.noticePeriod && filters.noticePeriod !== '') {
-      result = result.filter(c => 
-        c.noticePeriod && c.noticePeriod.toLowerCase().includes(filters.noticePeriod.toLowerCase())
-      );
-    }
-
-    // 6. Salary Expectation (assuming budget filter)
-    if (filters.salary) {
-      const maxSalary = parseInt(filters.salary);
-      result = result.filter(c => {
-        // Parse salaryRange like "10L - 15L" or just "15L"
-        const salaryMatch = c.salaryRange.match(/(\d+)/);
-        if (salaryMatch) {
-          const val = parseInt(salaryMatch[0]);
-          return val <= maxSalary;
+      const response = await api.get(`/candidates/search?${params.toString()}`);
+      let filteredData = normalizeCandidates(response.data);
+      
+      // 🔥 CLIENT-SIDE FILTERING (Since Backend SearchService only handles keyword and location)
+      filteredData = filteredData.filter(c => {
+        // Keyword/Skill Filter (AND logic for multiple chips + split keywords from input box)
+        const chips = filters.keywords || [];
+        const typing = (filters.searchQuery || '').trim().split(/[\s,]+/).filter(Boolean);
+        const allSearchTerms = [...chips, ...typing];
+ 
+        if (allSearchTerms.length > 0) {
+          const lowerTerms = allSearchTerms.map(t => t.toLowerCase());
+          const matchesAll = lowerTerms.every(term => {
+            // Substring match for name and role
+            if (c.name.toLowerCase().includes(term) || c.role.toLowerCase().includes(term)) return true;
+            
+            // EXACT match for skills (to ignore MySQL / Oracle SQL when searching for SQL)
+            return (c.skills || []).some(skill => skill.toLowerCase() === term);
+          });
+          if (!matchesAll) return false;
         }
+
+        // Experience Filter
+        if (filters.experience) {
+          const exp = c.experienceInt;
+          if (filters.experience === '0-2 Yrs') { if (exp > 2) return false; }
+          else if (filters.experience === '2-5 Yrs') { if (exp < 2 || exp > 5) return false; }
+          else if (filters.experience === '5-10 Yrs') { if (exp < 5 || exp > 10) return false; }
+          else if (filters.experience === '10+ Yrs') { if (exp < 10) return false; }
+        }
+
+        // Work Mode Filter
+        if (filters.workMode && c.workMode && !c.workMode.toLowerCase().includes(filters.workMode.toLowerCase())) {
+          return false;
+        }
+
+        // Salary Range Filter
+        if (filters.salaryRange) {
+          const salary = c.expectedSalary || 0;
+          if (filters.salaryRange === '3-6 LPA') { if (salary < 3 || salary > 6) return false; }
+          else if (filters.salaryRange === '6-10 LPA') { if (salary < 6 || salary > 10) return false; }
+          else if (filters.salaryRange === '10+ LPA') { if (salary <= 10) return false; }
+        }
+
+        // Notice Period / Availability Filter
+        if (filters.noticePeriod && c.noticePeriod && !c.noticePeriod.toLowerCase().includes(filters.noticePeriod.toLowerCase())) {
+          return false;
+        }
+
+        // Education Filter
+        if (filters.education && c.education && !c.education.toLowerCase().includes(filters.education.toLowerCase())) {
+          return false;
+        }
+
+        // Job Role Filter
+        if (filters.jobRole) {
+          const candidateRole = (c.jobRole || c.role || '').toLowerCase();
+          if (candidateRole !== filters.jobRole.toLowerCase()) return false;
+        }
+
+        // Skill Filter (exact match from dropdown)
+        if (filters.skillFilter) {
+          const hasSkill = (c.skills || []).some(skill => skill.toLowerCase() === filters.skillFilter.toLowerCase());
+          if (!hasSkill) return false;
+        }
+
         return true;
       });
+
+      setFilteredCandidates(filteredData);
+      setLoading(false);
+    } catch (err) {
+      console.error('Filter Search API Error:', err);
+      setError(err.message);
+      setLoading(false);
     }
+  }, [normalizeCandidates]);
 
-    // 7. Active Keywords (Tags)
-    if (filters.keywords && filters.keywords.length > 0) {
-      result = result.filter(c => 
-        filters.keywords.every(keyword => 
-          c.skills.some(skill => skill.toLowerCase().includes(keyword.toLowerCase()))
-        )
-      );
-    }
-
-    setFilteredCandidates(result);
-  }, [candidates, normalizeCandidates]);
-
-  return { candidates: filteredCandidates, loading, error, applyFilters, fetchSuggestions };
+  return { candidates: filteredCandidates, allCandidates: candidates, loading, error, applyFilters, fetchSuggestions };
 };
 
 export default useCandidates;

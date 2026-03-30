@@ -143,23 +143,24 @@
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: var(--spacing-6);
+  padding: var(--spacing-4);
   position: relative;
   transition: all 0.3s ease;
   display: flex;
+  cursor: pointer;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 }
 
 .candidate-card-v2:hover {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.04);
   border-color: var(--primary-color);
 }
 
 .card-top-actions {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
 }
 
 .bookmark-icon-btn {
