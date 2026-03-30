@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { FiX, FiMapPin, FiBriefcase, FiPhone, FiUser, FiArrowRight } from 'react-icons/fi';
-import api from '../api/config';
+import React from 'react';
+import { FiX, FiMapPin, FiBriefcase, FiPhone } from 'react-icons/fi';
+
 
 const GmailIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -14,49 +14,7 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const CandidateModal = ({ candidate, onClose, onSelectCandidate }) => {
-  const [similarCandidates, setSimilarCandidates] = useState([]);
-  const [loadingSimilar, setLoadingSimilar] = useState(false);
-
-  useEffect(() => {
-    if (!candidate) return;
-
-    const fetchSimilar = async () => {
-      try {
-        setLoadingSimilar(true);
-        const role = candidate.jobRole || candidate.role;
-        if (!role) {
-          setSimilarCandidates([]);
-          setLoadingSimilar(false);
-          return;
-        }
-
-        console.log("Searching:", role);
-        const response = await api.get(`/candidates/search?keyword=${encodeURIComponent(role)}`);
-        
-        // Filter out the current candidate and limit to 4
-        const filtered = (response.data || [])
-          .filter(c => c.id !== candidate.id)
-          .slice(0, 4)
-          .map(c => ({
-            ...c,
-            role: c.jobRole || c.role || 'Professional',
-            skills: typeof c.skills === 'string' 
-              ? c.skills.split(',').map(s => s.trim()) 
-              : Array.isArray(c.skills) ? c.skills : []
-          }));
-
-        setSimilarCandidates(filtered);
-      } catch (err) {
-        console.error('Error fetching similar candidates:', err);
-      } finally {
-        setLoadingSimilar(false);
-      }
-    };
-
-    fetchSimilar();
-  }, [candidate]);
-
+const CandidateModal = ({ candidate, onClose }) => {
   if (!candidate) return null;
 
   const { 
@@ -175,61 +133,7 @@ const CandidateModal = ({ candidate, onClose, onSelectCandidate }) => {
             </div>
           </section>
 
-          <section className="profile-section" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 'var(--spacing-8)', marginTop: 'var(--spacing-8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-6)' }}>
-              <h3 className="section-title" style={{ margin: 0 }}>Similar Candidates</h3>
-              {similarCandidates.length > 0 && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  Found {similarCandidates.length} matching {role}s
-                </span>
-              )}
-            </div>
 
-            {loadingSimilar ? (
-              <div style={{ display: 'flex', gap: 'var(--spacing-4)', overflow: 'hidden' }}>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse" style={{ flex: 1, height: '120px', backgroundColor: '#f3f4f6', borderRadius: 'var(--radius-xl)' }}></div>
-                ))}
-              </div>
-            ) : similarCandidates.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-4)' }}>
-                {similarCandidates.map(sim => (
-                  <div 
-                    key={sim.id} 
-                    className="similar-card"
-                    style={{ 
-                      padding: 'var(--spacing-4)', 
-                      borderRadius: 'var(--radius-xl)', 
-                      border: '1px solid var(--border-color)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      backgroundColor: 'var(--background-white)'
-                    }}
-                    onClick={() => onSelectCandidate && onSelectCandidate(sim)}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                        {sim.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sim.name}</h4>
-                        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sim.experience} • {sim.location}</p>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                      {sim.skills.slice(0, 2).map((s, idx) => (
-                        <span key={idx} style={{ fontSize: '0.65rem', padding: '2px 8px', backgroundColor: '#f9fafb', border: '1px solid #f3f4f6', borderRadius: '4px' }}>{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: 'var(--spacing-8)', backgroundColor: '#f9fafb', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--border-color)' }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>No similar candidates found for this role at the moment.</p>
-              </div>
-            )}
-          </section>
         </div>
 
         <div className="modal-footer" style={{ padding: 'var(--spacing-6) var(--spacing-8)', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--spacing-4)' }}>

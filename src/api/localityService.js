@@ -86,7 +86,7 @@ export const fetchLocalitiesFromGeoapify = async (district, stateName) => {
     // We use 'populated_place.suburb' and 'populated_place.neighbourhood' for human-friendly names (e.g., Mylapore, T. Nagar).
     // 'administrative.county_level' is included as a fallback for areas like Salem Taluks.
     const placesResponse = await fetch(
-      `https://api.geoapify.com/v2/places?categories=populated_place.suburb,populated_place.neighbourhood,administrative.suburb_level,administrative.neighbourhood_level,administrative.county_level&filter=circle:${lng},${lat},30000&limit=50&apiKey=${GEOAPIFY_KEY}`
+      `https://api.geoapify.com/v2/places?categories=populated_place.suburb,populated_place.neighbourhood,administrative.suburb_level,administrative.neighbourhood_level,administrative.county_level&filter=circle:${lng},${lat},10000&limit=50&apiKey=${GEOAPIFY_KEY}`
     );
     const placesData = await placesResponse.json();
 

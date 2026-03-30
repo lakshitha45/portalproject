@@ -1,0 +1,19 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- r=35 flat-topped -->
+    <path id="h" d="M 17.5 -30.31 L -17.5 -30.31 L -35 0 L -17.5 30.31 L 17.5 30.31 L 35 0 Z" />
+    <!-- r=52 flat-topped -->
+    <path id="h_big" d="M 26 -45.03 L -26 -45.03 L -52 0 L -26 45.03 L 26 45.03 L 52 0 Z" />
+  </defs>
+  <!-- Center elements within the 256x256 box -->
+  <g transform="translate(120, 125)">
+    <!-- Orange (Bottom-Left of Green) -->
+    <use href="#h" x="-64.5" y="37.2" fill="#E88B27" />
+    <!-- Yellow (Bottom of Green) -->
+    <use href="#h" x="0" y="70.5" fill="#F1B619" />
+    <!-- Green (Center) -->
+    <use href="#h" x="0" y="0" fill="#88C040" />
+    <!-- Teal (Top-Right, but larger) -->
+    <use href="#h_big" x="78" y="-55" fill="#2CB0B1" />
+  </g>
+</svg>

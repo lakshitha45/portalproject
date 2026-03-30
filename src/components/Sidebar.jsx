@@ -11,18 +11,13 @@ const Sidebar = () => {
   return (
     <aside className="sidebar fixed left-0 top-0 h-screen w-[280px] bg-white border-r border-gray-100 flex flex-col pt-6 pb-4 transition-all z-40">
       {/* Brand Logo Section */}
-      <div className="flex items-center gap-2.5 px-6 mb-8">
-        <div className="w-8 h-8 flex-shrink-0">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-sm">
-            <circle cx="5" cy="12" r="3" fill="#f59e0b" />
-            <circle cx="11" cy="7" r="3" fill="#06b6d4" />
-            <circle cx="11" cy="17" r="3" fill="#84cc16" />
-            <circle cx="17" cy="12" r="4" fill="#22d3ee" />
-          </svg>
+      <div className="flex items-center gap-1.5 px-6 mb-8 mt-2">
+        <div className="w-[34px] h-[34px] flex-shrink-0">
+          <img src="/favicon.svg" alt="App Icon" className="w-full h-full drop-shadow-sm" />
         </div>
-        <div className="flex items-baseline gap-1 whitespace-nowrap overflow-hidden">
-          <span className="text-lg font-bold text-gray-800 tracking-tight">GM TEK</span>
-          <span className="text-lg font-medium text-gray-500 tracking-tight">TalentConnect</span>
+        <div className="flex items-center">
+          <img src="/gmtek-logo.svg" alt="GM TEK" className="h-[21px] drop-shadow-sm object-contain -ml-1" />
+          <span className="text-[17px] font-bold text-gray-800 tracking-tight ml-1 mt-[2px]" style={{ fontFamily: 'Inter, sans-serif' }}>TalentConnect</span>
         </div>
       </div>
       
